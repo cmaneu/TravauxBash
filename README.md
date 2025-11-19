@@ -54,7 +54,7 @@ Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre n
 ## 🛠️ Technologies utilisées
 
 - HTML5
-- **Tailwind CSS** (via CDN) - Framework CSS moderne et responsive
+- **CSS3 personnalisé** - Styles modernes et responsives intégrés (gradient, animations, design mobile-first)
 - JavaScript (vanilla)
 - MediaRecorder API
 - Wake Lock API
@@ -78,4 +78,4 @@ L'application générera automatiquement un tableau organisé :
 - La clé API et l'endpoint sont stockés uniquement dans le localStorage de votre navigateur
 - Aucune donnée n'est envoyée à des serveurs tiers (sauf l'API configurée)
 - L'enregistrement audio est traité localement avant l'envoi
-- Tailwind CSS chargé via CDN officiel (https://cdn.tailwindcss.com)
+- Aucune dépendance externe - CSS intégré dans le fichier HTML
