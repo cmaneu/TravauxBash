@@ -299,7 +299,8 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let recordingStartTime = 0;
-        let recordingPausedTime = 0;
+        let pausedDuration = 0;
+        let pauseStartTime = 0;
         let timerInterval = null;
         let wakeLock = null;
         let isPaused = false;
@@ -344,7 +345,7 @@
         requestWakeLock();
 
         function updateTimer() {
-            const elapsed = Date.now() - recordingStartTime - recordingPausedTime;
+            const elapsed = Date.now() - recordingStartTime - pausedDuration;
             const seconds = Math.floor(elapsed / 1000);
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
@@ -370,7 +371,8 @@
 
                 mediaRecorder.start();
                 recordingStartTime = Date.now();
-                recordingPausedTime = 0;
+                pausedDuration = 0;
+                pauseStartTime = 0;
                 
                 timerInterval = setInterval(updateTimer, 100);
 
@@ -388,7 +390,7 @@
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.pause();
                 isPaused = true;
-                const pauseStartTime = Date.now();
+                pauseStartTime = Date.now();
                 
                 clearInterval(timerInterval);
                 
@@ -396,8 +398,8 @@
                 status.className = 'status paused';
                 pauseBtn.textContent = '▶️ Reprendre';
             } else if (mediaRecorder && mediaRecorder.state === 'paused') {
-                const pauseDuration = Date.now() - (recordingStartTime + recordingPausedTime + parseInt(timer.textContent.split(':')[0]) * 60000 + parseInt(timer.textContent.split(':')[1]) * 1000);
-                recordingPausedTime += pauseDuration;
+                // Add the time spent paused to the total paused duration
+                pausedDuration += (Date.now() - pauseStartTime);
                 
                 mediaRecorder.resume();
                 isPaused = false;
