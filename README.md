@@ -17,13 +17,22 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 ## 🚀 Utilisation
 
 1. Ouvrez `index.html` dans un navigateur web moderne
-2. Entrez votre clé API GitHub Models (OpenAI)
-3. Cliquez sur "Démarrer l'enregistrement" pour commencer
-4. Décrivez les travaux à effectuer vocalement
-5. Utilisez "Pause" pour interrompre temporairement
-6. Cliquez sur "Terminer et analyser" pour obtenir le tableau organisé
+2. Configurez le point de terminaison API (par défaut : GitHub Models)
+3. Entrez votre clé API GitHub Models (OpenAI)
+4. Cliquez sur "Démarrer l'enregistrement" pour commencer
+5. Décrivez les travaux à effectuer vocalement
+6. Utilisez "Pause" pour interrompre temporairement
+7. Cliquez sur "Terminer et analyser" pour obtenir le tableau organisé
 
-## 🔑 Configuration de la clé API
+## 🔑 Configuration
+
+### Point de terminaison API
+
+L'application permet de configurer le point de terminaison OpenAI :
+- **Par défaut** : `https://models.inference.ai.azure.com/chat/completions` (GitHub Models)
+- **Personnalisable** : Vous pouvez utiliser n'importe quel endpoint compatible OpenAI
+
+### Clé API
 
 Vous aurez besoin d'une clé API GitHub Models pour utiliser la fonctionnalité d'analyse IA :
 
@@ -31,7 +40,7 @@ Vous aurez besoin d'une clé API GitHub Models pour utiliser la fonctionnalité 
 2. Obtenez une clé API pour le modèle `gpt-4o-audio-preview`
 3. Entrez la clé dans le champ prévu dans l'application
 
-La clé est sauvegardée localement dans votre navigateur pour une utilisation ultérieure.
+Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre navigateur pour une utilisation ultérieure.
 
 ## 📱 Compatibilité
 
@@ -45,11 +54,11 @@ La clé est sauvegardée localement dans votre navigateur pour une utilisation u
 ## 🛠️ Technologies utilisées
 
 - HTML5
-- CSS3 (avec animations et responsive design)
+- **Tailwind CSS** (via CDN) - Framework CSS moderne et responsive
 - JavaScript (vanilla)
 - MediaRecorder API
 - Wake Lock API
-- OpenAI GPT-4o Audio Preview via GitHub Models
+- OpenAI GPT-4o Audio Preview via endpoint configurable (GitHub Models par défaut)
 
 ## 📝 Exemple d'utilisation
 
@@ -66,6 +75,7 @@ L'application générera automatiquement un tableau organisé :
 
 ## 🔐 Sécurité
 
-- La clé API est stockée uniquement dans le localStorage de votre navigateur
-- Aucune donnée n'est envoyée à des serveurs tiers (sauf l'API GitHub Models)
+- La clé API et l'endpoint sont stockés uniquement dans le localStorage de votre navigateur
+- Aucune donnée n'est envoyée à des serveurs tiers (sauf l'API configurée)
 - L'enregistrement audio est traité localement avant l'envoi
+- Tailwind CSS chargé via CDN officiel (https://cdn.tailwindcss.com)
