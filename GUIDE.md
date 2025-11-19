@@ -43,7 +43,7 @@ Après l'analyse, un tableau s'affiche avec:
 
 L'application est optimisée pour mobile et inclut:
 - **Wake Lock**: L'écran ne se mettra pas en veille pendant l'utilisation
-- **Design responsive**: Construit avec Tailwind CSS, s'adapte à toutes les tailles d'écran
+- **Design responsive**: CSS personnalisé avec media queries, s'adapte à toutes les tailles d'écran
 - **Touches larges**: Boutons faciles à utiliser avec le doigt
 
 ## 🔧 Fonctionnalités avancées
