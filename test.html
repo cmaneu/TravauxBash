@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - TravauxBash</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        h2 { color: #333; margin-top: 0; }
+        .success { color: #00b894; }
+        .fail { color: #d63031; }
+        .info { color: #666; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Tests TravauxBash</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Wake Lock API</h2>
+        <p class="info">Vérifie si l'API Wake Lock est disponible</p>
+        <div id="test-wakelock"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: MediaRecorder API</h2>
+        <p class="info">Vérifie si l'API MediaRecorder est disponible pour l'enregistrement audio</p>
+        <div id="test-mediarecorder"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: getUserMedia API</h2>
+        <p class="info">Vérifie si l'accès au microphone est disponible</p>
+        <div id="test-getusermedia"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Fetch API</h2>
+        <p class="info">Vérifie si l'API Fetch est disponible pour les requêtes HTTP</p>
+        <div id="test-fetch"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: LocalStorage</h2>
+        <p class="info">Vérifie si le stockage local est disponible pour sauvegarder la clé API</p>
+        <div id="test-localstorage"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Instructions de test manuel</h2>
+        <ol>
+            <li>Ouvrir <a href="index.html">index.html</a> dans votre navigateur</li>
+            <li>Entrer une clé API GitHub Models (obtenue depuis <a href="https://github.com/marketplace/models" target="_blank">GitHub Models</a>)</li>
+            <li>Cliquer sur "Démarrer l'enregistrement"</li>
+            <li>Autoriser l'accès au microphone si demandé</li>
+            <li>Parler des travaux à effectuer, par exemple:</li>
+        </ol>
+        <pre>"Dans la cuisine, au niveau du mur nord, il faut réparer la prise électrique. 
+Appeler un électricien. Dans la salle de bain, au plafond, il y a une fuite 
+d'eau à corriger. Besoin d'un plombier."</pre>
+        <ol start="6">
+            <li>Tester le bouton "Pause" pour mettre en pause</li>
+            <li>Cliquer à nouveau sur "Pause" (qui devient "Reprendre") pour continuer</li>
+            <li>Cliquer sur "Terminer et analyser" pour arrêter et analyser</li>
+            <li>Vérifier que le tableau s'affiche avec les colonnes: Pièce, Emplacement, Objet, Artisan</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🔒 Test de sécurité: Échappement HTML</h2>
+        <p class="info">Vérifie que la fonction escapeHtml fonctionne correctement</p>
+        <div id="test-escape"></div>
+    </div>
+
+    <script>
+        function runTests() {
+            // Test 1: Wake Lock
+            const wakeLockTest = document.getElementById('test-wakelock');
+            if ('wakeLock' in navigator) {
+                wakeLockTest.innerHTML = '<span class="success">✅ Wake Lock API disponible</span>';
+            } else {
+                wakeLockTest.innerHTML = '<span class="fail">❌ Wake Lock API non disponible</span>';
+            }
+
+            // Test 2: MediaRecorder
+            const mediaRecorderTest = document.getElementById('test-mediarecorder');
+            if (typeof MediaRecorder !== 'undefined') {
+                wakeLockTest.innerHTML += '<br><span class="info">Formats supportés: ' + 
+                    ['audio/webm', 'audio/mp4', 'audio/ogg'].filter(type => MediaRecorder.isTypeSupported(type)).join(', ') + '</span>';
+                mediaRecorderTest.innerHTML = '<span class="success">✅ MediaRecorder API disponible</span>';
+            } else {
+                mediaRecorderTest.innerHTML = '<span class="fail">❌ MediaRecorder API non disponible</span>';
+            }
+
+            // Test 3: getUserMedia
+            const getUserMediaTest = document.getElementById('test-getusermedia');
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                getUserMediaTest.innerHTML = '<span class="success">✅ getUserMedia API disponible</span>';
+            } else {
+                getUserMediaTest.innerHTML = '<span class="fail">❌ getUserMedia API non disponible</span>';
+            }
+
+            // Test 4: Fetch
+            const fetchTest = document.getElementById('test-fetch');
+            if (typeof fetch !== 'undefined') {
+                fetchTest.innerHTML = '<span class="success">✅ Fetch API disponible</span>';
+            } else {
+                fetchTest.innerHTML = '<span class="fail">❌ Fetch API non disponible</span>';
+            }
+
+            // Test 5: LocalStorage
+            const localStorageTest = document.getElementById('test-localstorage');
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                localStorageTest.innerHTML = '<span class="success">✅ LocalStorage disponible</span>';
+            } catch (e) {
+                localStorageTest.innerHTML = '<span class="fail">❌ LocalStorage non disponible: ' + e.message + '</span>';
+            }
+
+            // Test 6: HTML Escaping
+            const escapeTest = document.getElementById('test-escape');
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            const testString = '&lt;script&gt;alert("XSS")&lt;/script&gt;';
+            const testInput = '<' + 'script' + '>alert("XSS")<' + '/script' + '>';
+            const escaped = escapeHtml(testInput);
+            
+            if (escaped.indexOf('&lt;') !== -1 && escaped.indexOf('&gt;') !== -1) {
+                escapeTest.innerHTML = '<span class="success">✅ Fonction escapeHtml fonctionne correctement</span><br>';
+                escapeTest.innerHTML += '<span class="info">Test: Les balises HTML sont correctement échappées</span>';
+            } else {
+                escapeTest.innerHTML = '<span class="fail">❌ Problème avec escapeHtml</span>';
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
