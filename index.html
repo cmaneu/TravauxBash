@@ -4,8 +4,267 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TravauxBash - Gestion des Travaux</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1.25rem;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            min-height: calc(100vh - 2.5rem);
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .status {
+            padding: 0.75rem 1rem;
+            background: #f3f4f6;
+            border-radius: 0.75rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.recording {
+            background: #fee;
+            color: #b91c1c;
+            animation: pulse 2s infinite;
+        }
+
+        .status.paused {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .wake-lock-status {
+            font-size: 0.875rem;
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .wake-lock-status.active {
+            color: #059669;
+        }
+
+        .timer {
+            font-size: 3rem;
+            text-align: center;
+            font-weight: 700;
+            color: #667eea;
+            margin: 1.5rem 0;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-pause {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background: #f59e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .results {
+            margin-top: 1.25rem;
+        }
+
+        .results h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2.5rem;
+            color: #667eea;
+        }
+
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 1rem;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #667eea;
+            color: white;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+            transition: background-color 0.2s;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -14,10 +273,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .status-recording {
-            animation: pulse 2s infinite;
         }
 
         .spinner {
@@ -29,49 +284,66 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.875rem;
+            }
+
+            .timer {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            button {
+                padding: 0.875rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.625rem 0.5rem;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-5">
-    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8 min-h-[calc(100vh-2.5rem)]">
-        <h1 class="text-4xl font-bold text-center text-indigo-600 mb-2">🏗️ TravauxBash</h1>
-        <p class="text-center text-gray-600 mb-8">Gestionnaire de travaux de chantier</p>
+<body>
+    <div class="container">
+        <h1>🏗️ TravauxBash</h1>
+        <p class="subtitle">Gestionnaire de travaux de chantier</p>
 
-        <div class="bg-gray-50 rounded-xl p-5 mb-5 space-y-4">
-            <div>
-                <label for="apiEndpoint" class="block text-sm font-semibold text-gray-700 mb-2">Point de terminaison API OpenAI:</label>
+        <div class="config-section">
+            <div class="form-group">
+                <label for="apiEndpoint">Point de terminaison API OpenAI:</label>
                 <input type="text" id="apiEndpoint" 
-                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
                        value="https://models.inference.ai.azure.com/chat/completions"
                        placeholder="https://models.inference.ai.azure.com/chat/completions">
-                <p class="text-xs text-gray-500 mt-1">Pour GitHub Models, utilisez l'URL par défaut ci-dessus</p>
+                <p class="helper-text">Pour GitHub Models, utilisez l'URL par défaut ci-dessus</p>
             </div>
-            <div>
-                <label for="apiKey" class="block text-sm font-semibold text-gray-700 mb-2">Clé API GitHub Models (OpenAI):</label>
+            <div class="form-group">
+                <label for="apiKey">Clé API GitHub Models (OpenAI):</label>
                 <input type="password" id="apiKey" 
-                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
                        placeholder="Entrez votre clé API GitHub Models">
             </div>
         </div>
 
-        <div id="status" class="px-4 py-3 bg-gray-100 rounded-xl mb-5 text-center font-medium">
-            Prêt à enregistrer
-        </div>
-        <div id="wakeLockStatus" class="text-sm text-center text-gray-600 mb-2"></div>
-        <div id="timer" class="text-5xl text-center font-bold text-indigo-600 my-6">00:00</div>
+        <div class="status" id="status">Prêt à enregistrer</div>
+        <div class="wake-lock-status" id="wakeLockStatus"></div>
+        <div class="timer" id="timer">00:00</div>
 
-        <div class="flex flex-col gap-4 mb-5">
-            <button id="startBtn" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl uppercase tracking-wide transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                🎤 Démarrer l'enregistrement
-            </button>
-            <button id="pauseBtn" disabled class="px-8 py-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold rounded-xl uppercase tracking-wide transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                ⏸️ Pause
-            </button>
-            <button id="stopBtn" disabled class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl uppercase tracking-wide transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                ⏹️ Terminer et analyser
-            </button>
+        <div class="controls">
+            <button class="btn-start" id="startBtn">🎤 Démarrer l'enregistrement</button>
+            <button class="btn-pause" id="pauseBtn" disabled>⏸️ Pause</button>
+            <button class="btn-stop" id="stopBtn" disabled>⏹️ Terminer et analyser</button>
         </div>
 
-        <div id="results" class="mt-5"></div>
+        <div class="results" id="results"></div>
     </div>
 
     <script>
@@ -100,13 +372,11 @@
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
                     wakeLockStatus.textContent = '🔒 Écran verrouillé - l\'appareil ne se mettra pas en veille';
-                    wakeLockStatus.classList.add('text-emerald-600');
-                    wakeLockStatus.classList.remove('text-gray-600');
+                    wakeLockStatus.classList.add('active');
                     
                     wakeLock.addEventListener('release', () => {
                         wakeLockStatus.textContent = '🔓 Verrouillage d\'écran relâché';
-                        wakeLockStatus.classList.remove('text-emerald-600');
-                        wakeLockStatus.classList.add('text-gray-600');
+                        wakeLockStatus.classList.remove('active');
                     });
                 } else {
                     wakeLockStatus.textContent = '⚠️ Wake Lock API non disponible sur cet appareil';
@@ -159,12 +429,12 @@
                 timerInterval = setInterval(updateTimer, 100);
 
                 status.textContent = '🎙️ Enregistrement en cours...';
-                status.className = 'px-4 py-3 bg-red-100 text-red-700 rounded-xl mb-5 text-center font-medium status-recording';
+                status.className = 'status recording';
                 startBtn.disabled = true;
                 pauseBtn.disabled = false;
                 stopBtn.disabled = false;
             } catch (err) {
-                results.innerHTML = `<div class="bg-red-500 text-white px-4 py-3 rounded-lg mt-4">Erreur d'accès au microphone: ${err.message}</div>`;
+                results.innerHTML = `<div class="error-message">Erreur d'accès au microphone: ${err.message}</div>`;
             }
         }
 
@@ -177,7 +447,7 @@
                 clearInterval(timerInterval);
                 
                 status.textContent = '⏸️ Enregistrement en pause';
-                status.className = 'px-4 py-3 bg-yellow-100 text-yellow-800 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status paused';
                 pauseBtn.textContent = '▶️ Reprendre';
             } else if (mediaRecorder && mediaRecorder.state === 'paused') {
                 // Add the time spent paused to the total paused duration
@@ -189,7 +459,7 @@
                 timerInterval = setInterval(updateTimer, 100);
                 
                 status.textContent = '🎙️ Enregistrement en cours...';
-                status.className = 'px-4 py-3 bg-red-100 text-red-700 rounded-xl mb-5 text-center font-medium status-recording';
+                status.className = 'status recording';
                 pauseBtn.textContent = '⏸️ Pause';
             }
         }
@@ -200,7 +470,7 @@
                 clearInterval(timerInterval);
                 
                 status.textContent = '⏳ Traitement en cours...';
-                status.className = 'px-4 py-3 bg-gray-100 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status';
                 startBtn.disabled = false;
                 pauseBtn.disabled = true;
                 stopBtn.disabled = true;
@@ -213,21 +483,21 @@
             const apiEndpoint = apiEndpointInput.value.trim();
             
             if (!apiKey) {
-                results.innerHTML = '<div class="bg-red-500 text-white px-4 py-3 rounded-lg mt-4">⚠️ Veuillez entrer votre clé API GitHub Models</div>';
+                results.innerHTML = '<div class="error-message">⚠️ Veuillez entrer votre clé API GitHub Models</div>';
                 status.textContent = 'Prêt à enregistrer';
-                status.className = 'px-4 py-3 bg-gray-100 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status';
                 return;
             }
 
             if (!apiEndpoint) {
-                results.innerHTML = '<div class="bg-red-500 text-white px-4 py-3 rounded-lg mt-4">⚠️ Veuillez entrer le point de terminaison API</div>';
+                results.innerHTML = '<div class="error-message">⚠️ Veuillez entrer le point de terminaison API</div>';
                 status.textContent = 'Prêt à enregistrer';
-                status.className = 'px-4 py-3 bg-gray-100 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status';
                 return;
             }
 
             results.innerHTML = `
-                <div class="text-center py-10 text-indigo-600">
+                <div class="loading">
                     <div class="spinner"></div>
                     <p>Analyse de l'enregistrement avec l'IA...</p>
                 </div>
@@ -324,13 +594,13 @@ Ne réponds qu'avec le JSON, rien d'autre.`
 
                 displayResults(travauxData);
                 status.textContent = '✅ Analyse terminée';
-                status.className = 'px-4 py-3 bg-green-100 text-green-700 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status success';
                 timer.textContent = '00:00';
 
             } catch (err) {
-                results.innerHTML = `<div class="bg-red-500 text-white px-4 py-3 rounded-lg mt-4">❌ Erreur: ${err.message}</div>`;
+                results.innerHTML = `<div class="error-message">❌ Erreur: ${err.message}</div>`;
                 status.textContent = 'Erreur lors de l\'analyse';
-                status.className = 'px-4 py-3 bg-red-100 text-red-700 rounded-xl mb-5 text-center font-medium';
+                status.className = 'status error';
                 console.error('Error:', err);
             }
         }
@@ -346,23 +616,23 @@ Ne réponds qu'avec le JSON, rien d'autre.`
 
         function displayResults(data) {
             if (!data.travaux || data.travaux.length === 0) {
-                results.innerHTML = '<div class="bg-red-500 text-white px-4 py-3 rounded-lg mt-4">Aucun travail détecté dans l\'enregistrement</div>';
+                results.innerHTML = '<div class="error-message">Aucun travail détecté dans l\'enregistrement</div>';
                 return;
             }
 
-            let html = '<h2 class="text-2xl font-bold text-indigo-600 mb-4 pb-3 border-b-2 border-indigo-600">📋 Travaux détectés</h2>';
-            html += '<div class="overflow-x-auto">';
-            html += '<table class="w-full mt-4 bg-white shadow-lg rounded-lg overflow-hidden">';
-            html += '<thead class="bg-indigo-600 text-white"><tr><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Pièce</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Emplacement</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Objet</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Artisan</th></tr></thead>';
-            html += '<tbody class="divide-y divide-gray-200">';
+            let html = '<h2>📋 Travaux détectés</h2>';
+            html += '<div class="table-container">';
+            html += '<table>';
+            html += '<thead><tr><th>Pièce</th><th>Emplacement</th><th>Objet</th><th>Artisan</th></tr></thead>';
+            html += '<tbody>';
 
             data.travaux.forEach(travail => {
                 html += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3">${escapeHtml(travail.piece || 'N/A')}</td>
-                        <td class="px-4 py-3">${escapeHtml(travail.emplacement || 'N/A')}</td>
-                        <td class="px-4 py-3">${escapeHtml(travail.objet || 'N/A')}</td>
-                        <td class="px-4 py-3">${escapeHtml(travail.artisan || 'N/A')}</td>
+                    <tr>
+                        <td>${escapeHtml(travail.piece || 'N/A')}</td>
+                        <td>${escapeHtml(travail.emplacement || 'N/A')}</td>
+                        <td>${escapeHtml(travail.objet || 'N/A')}</td>
+                        <td>${escapeHtml(travail.artisan || 'N/A')}</td>
                     </tr>
                 `;
             });
