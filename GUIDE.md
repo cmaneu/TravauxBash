@@ -6,12 +6,18 @@
 - Ouvrez `index.html` dans votre navigateur web
 - L'application fonctionne entièrement côté client, aucun serveur n'est nécessaire
 
-### 2. Configurer votre clé API
-1. Obtenez une clé API GitHub Models sur https://github.com/marketplace/models
-2. Sélectionnez le modèle `gpt-4o-audio-preview`
-3. Copiez votre clé API
-4. Collez-la dans le champ "Clé API GitHub Models (OpenAI)"
-5. La clé sera sauvegardée automatiquement dans votre navigateur
+### 2. Configuration de l'API
+1. **Point de terminaison** (optionnel):
+   - Par défaut: `https://models.inference.ai.azure.com/chat/completions`
+   - Pour GitHub Models, laissez l'URL par défaut
+   - Pour un autre fournisseur OpenAI, entrez l'URL personnalisée
+   
+2. **Clé API**:
+   - Obtenez une clé API GitHub Models sur https://github.com/marketplace/models
+   - Sélectionnez le modèle `gpt-4o-audio-preview`
+   - Copiez votre clé API
+   - Collez-la dans le champ "Clé API GitHub Models (OpenAI)"
+   - Les paramètres seront sauvegardés automatiquement dans votre navigateur
 
 ### 3. Enregistrer vos travaux
 1. Cliquez sur **"Démarrer l'enregistrement"**
@@ -37,7 +43,7 @@ Après l'analyse, un tableau s'affiche avec:
 
 L'application est optimisée pour mobile et inclut:
 - **Wake Lock**: L'écran ne se mettra pas en veille pendant l'utilisation
-- **Design responsive**: S'adapte à toutes les tailles d'écran
+- **Design responsive**: Construit avec Tailwind CSS, s'adapte à toutes les tailles d'écran
 - **Touches larges**: Boutons faciles à utiliser avec le doigt
 
 ## 🔧 Fonctionnalités avancées
