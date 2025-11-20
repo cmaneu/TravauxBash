@@ -486,14 +486,23 @@
             try {
                 audioChunks = [];
                 stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                
+                // Try to use WAV format if supported, otherwise use default
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    options = { mimeType: 'audio/wav' };
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                }
+                
+                mediaRecorder = new MediaRecorder(stream, options);
                 
                 mediaRecorder.ondataavailable = (event) => {
                     audioChunks.push(event.data);
                 };
                 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                     await transcribeAudio(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
@@ -543,13 +552,22 @@
             }
             
             try {
+                // Determine file extension based on mime type
+                let fileExtension = 'wav';
+                if (audioBlob.type.includes('webm')) {
+                    fileExtension = 'webm';
+                } else if (audioBlob.type.includes('mp4')) {
+                    fileExtension = 'mp4';
+                } else if (audioBlob.type.includes('ogg')) {
+                    fileExtension = 'ogg';
+                }
+                
                 // Create FormData
                 const formData = new FormData();
-                formData.append('file', audioBlob, 'recording.wav');
+                formData.append('file', audioBlob, `recording.${fileExtension}`);
                 formData.append('language', 'fr');
                 formData.append('temperature', temperature.toString());
                 formData.append('response_format', 'json');
-                formData.append('model', 'gpt-4o-transcribe');
                 
                 // Build the full URL
                 const url = `${apiEndpoint}/openai/deployments/gpt-4o-transcribe/audio/transcriptions?api-version=2025-01-01-preview`;
