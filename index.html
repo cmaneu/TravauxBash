@@ -429,7 +429,15 @@
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                
+                // Use audio/wav if supported, otherwise fall back to webm
+                const mimeType = MediaRecorder.isTypeSupported('audio/wav') 
+                    ? 'audio/wav' 
+                    : MediaRecorder.isTypeSupported('audio/webm') 
+                    ? 'audio/webm' 
+                    : '';
+                
+                mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
                 audioChunks = [];
                 isPaused = false;
 
@@ -438,7 +446,7 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
                     lastAudioBlob = audioBlob; // Store for potential retry
                     await processRecording(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
@@ -508,7 +516,16 @@
                 a.style.display = 'none';
                 a.href = url;
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                a.download = `enregistrement-${timestamp}.webm`;
+                
+                // Determine file extension based on blob type
+                let extension = 'webm';
+                if (lastAudioBlob.type.includes('wav')) {
+                    extension = 'wav';
+                } else if (lastAudioBlob.type.includes('mp3')) {
+                    extension = 'mp3';
+                }
+                
+                a.download = `enregistrement-${timestamp}.${extension}`;
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(url);
@@ -548,6 +565,14 @@
             try {
                 // Convert audio blob to base64
                 const audioBase64 = await blobToBase64(audioBlob);
+                
+                // Determine audio format
+                let audioFormat = 'wav';
+                if (audioBlob.type.includes('webm')) {
+                    audioFormat = 'wav'; // Convert webm to wav format indicator
+                } else if (audioBlob.type.includes('mp3')) {
+                    audioFormat = 'mp3';
+                }
 
                 const response = await fetch(apiEndpoint, {
                     method: 'POST',
@@ -556,10 +581,15 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
+                        model: modelName,
+                        modalities: ["text"],
                         messages: [
                             {
-                                role: 'system',
-                                content: `Tu es un assistant qui aide à organiser les travaux de chantier. 
+                                role: "user",
+                                content: [
+                                    {
+                                        type: "text",
+                                        text: `Tu es un assistant qui aide à organiser les travaux de chantier. 
 Tu dois analyser l'enregistrement vocal et extraire les informations sur les travaux à effectuer.
 Pour chaque travail mentionné, identifie:
 - Pièce: la pièce ou zone concernée
@@ -579,28 +609,18 @@ Réponds UNIQUEMENT avec un tableau JSON dans ce format exact:
   ]
 }
 
-Ne réponds qu'avec le JSON, rien d'autre.`
-                            },
-                            {
-                                role: 'user',
-                                content: [
-                                    {
-                                        type: 'text',
-                                        text: 'Voici l\'enregistrement des travaux à effectuer. Analyse-le et extrait les informations dans le format demandé.'
+Ne réponds qu'avec le JSON, rien d'autre. Voici l'enregistrement des travaux à effectuer.`
                                     },
                                     {
-                                        type: 'input_audio',
+                                        type: "input_audio",
                                         input_audio: {
                                             data: audioBase64.split(',')[1],
-                                            format: 'wav'
+                                            format: audioFormat
                                         }
                                     }
                                 ]
                             }
-                        ],
-                        model: modelName,
-                        temperature: 0.7,
-                        max_tokens: 2000
+                        ]
                     })
                 });
 
