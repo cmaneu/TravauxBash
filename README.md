@@ -57,7 +57,7 @@ L'application permet de configurer le point de terminaison OpenAI :
 Vous aurez besoin d'une clé API GitHub Models pour utiliser la fonctionnalité d'analyse IA :
 
 1. Visitez [GitHub Models](https://github.com/marketplace/models)
-2. Obtenez une clé API pour le modèle `gpt-4o-audio-preview`
+2. Obtenez une clé API pour le modèle `openai/gpt-5`
 3. **Option A** : Entrez la clé dans le champ prévu dans l'application
 4. **Option B** : Passez la clé via le paramètre `key` dans l'URL
 
@@ -79,7 +79,7 @@ Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre n
 - JavaScript (vanilla)
 - MediaRecorder API
 - Wake Lock API
-- OpenAI GPT-4o Audio Preview via endpoint configurable (GitHub Models par défaut)
+- OpenAI GPT-5 via endpoint configurable (GitHub Models par défaut)
 
 ## 📝 Exemple d'utilisation
 

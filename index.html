@@ -355,6 +355,7 @@
         let timerInterval = null;
         let wakeLock = null;
         let isPaused = false;
+        let lastAudioBlob = null;
 
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
@@ -417,6 +418,7 @@
 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    lastAudioBlob = audioBlob; // Store for potential retry
                     await processRecording(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
                 };
@@ -556,7 +558,7 @@ Ne réponds qu'avec le JSON, rien d'autre.`
                                 ]
                             }
                         ],
-                        model: 'gpt-4o-audio-preview',
+                        model: 'openai/gpt-5',
                         temperature: 0.7,
                         max_tokens: 2000
                     })
@@ -598,7 +600,15 @@ Ne réponds qu'avec le JSON, rien d'autre.`
                 timer.textContent = '00:00';
 
             } catch (err) {
-                results.innerHTML = `<div class="error-message">❌ Erreur: ${err.message}</div>`;
+                results.innerHTML = `
+                    <div class="error-message">
+                        ❌ Erreur: ${err.message}
+                        <br><br>
+                        <button class="btn-start" onclick="retryAnalysis()" style="margin-top: 10px;">
+                            🔄 Relancer l'analyse
+                        </button>
+                    </div>
+                `;
                 status.textContent = 'Erreur lors de l\'analyse';
                 status.className = 'status error';
                 console.error('Error:', err);
@@ -694,6 +704,17 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         apiEndpointInput.addEventListener('change', () => {
             localStorage.setItem('githubModelsApiEndpoint', apiEndpointInput.value);
         });
+
+        // Function to retry analysis with the last recorded audio
+        async function retryAnalysis() {
+            if (lastAudioBlob) {
+                status.textContent = '⏳ Nouvelle tentative d\'analyse...';
+                status.className = 'status';
+                await processRecording(lastAudioBlob);
+            } else {
+                results.innerHTML = '<div class="error-message">⚠️ Aucun enregistrement disponible pour relancer l\'analyse</div>';
+            }
+        }
     </script>
 </body>
 </html>
