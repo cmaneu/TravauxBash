@@ -652,15 +652,37 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         pauseBtn.addEventListener('click', pauseRecording);
         stopBtn.addEventListener('click', stopRecording);
 
-        // Load API key and endpoint from localStorage if available
-        const savedApiKey = localStorage.getItem('githubModelsApiKey');
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
+        // Function to get query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
         }
 
-        const savedApiEndpoint = localStorage.getItem('githubModelsApiEndpoint');
-        if (savedApiEndpoint) {
-            apiEndpointInput.value = savedApiEndpoint;
+        // Load API key and endpoint from query parameters or localStorage
+        const queryApiKey = getQueryParam('key') || getQueryParam('apiKey');
+        const queryApiEndpoint = getQueryParam('endpoint');
+
+        // Priority: query parameters > localStorage
+        if (queryApiKey) {
+            apiKeyInput.value = queryApiKey;
+            // Optionally save to localStorage
+            localStorage.setItem('githubModelsApiKey', queryApiKey);
+        } else {
+            const savedApiKey = localStorage.getItem('githubModelsApiKey');
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+            }
+        }
+
+        if (queryApiEndpoint) {
+            apiEndpointInput.value = queryApiEndpoint;
+            // Optionally save to localStorage
+            localStorage.setItem('githubModelsApiEndpoint', queryApiEndpoint);
+        } else {
+            const savedApiEndpoint = localStorage.getItem('githubModelsApiEndpoint');
+            if (savedApiEndpoint) {
+                apiEndpointInput.value = savedApiEndpoint;
+            }
         }
 
         // Save API key to localStorage when changed

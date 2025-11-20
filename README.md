@@ -16,6 +16,7 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 
 ## 🚀 Utilisation
 
+### Méthode 1 : Utilisation standard
 1. Ouvrez `index.html` dans un navigateur web moderne
 2. Configurez le point de terminaison API (par défaut : GitHub Models)
 3. Entrez votre clé API GitHub Models (OpenAI)
@@ -24,6 +25,24 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 6. Utilisez "Pause" pour interrompre temporairement
 7. Cliquez sur "Terminer et analyser" pour obtenir le tableau organisé
 
+### Méthode 2 : Configuration via URL (paramètres de requête)
+Vous pouvez pré-configurer l'application en passant la clé API et l'endpoint via l'URL :
+
+```
+index.html?key=VOTRE_CLE_API&endpoint=https://votre.endpoint.com
+```
+
+**Paramètres disponibles :**
+- `key` ou `apiKey` : Votre clé API
+- `endpoint` : L'URL du point de terminaison API
+
+**Exemple :**
+```
+index.html?key=ghp_abc123&endpoint=https://models.inference.ai.azure.com/chat/completions
+```
+
+Les valeurs passées par URL sont automatiquement sauvegardées dans le navigateur.
+
 ## 🔑 Configuration
 
 ### Point de terminaison API
@@ -31,6 +50,7 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 L'application permet de configurer le point de terminaison OpenAI :
 - **Par défaut** : `https://models.inference.ai.azure.com/chat/completions` (GitHub Models)
 - **Personnalisable** : Vous pouvez utiliser n'importe quel endpoint compatible OpenAI
+- **Via URL** : Passez le paramètre `endpoint` dans l'URL
 
 ### Clé API
 
@@ -38,7 +58,8 @@ Vous aurez besoin d'une clé API GitHub Models pour utiliser la fonctionnalité 
 
 1. Visitez [GitHub Models](https://github.com/marketplace/models)
 2. Obtenez une clé API pour le modèle `gpt-4o-audio-preview`
-3. Entrez la clé dans le champ prévu dans l'application
+3. **Option A** : Entrez la clé dans le champ prévu dans l'application
+4. **Option B** : Passez la clé via le paramètre `key` dans l'URL
 
 Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre navigateur pour une utilisation ultérieure.
 

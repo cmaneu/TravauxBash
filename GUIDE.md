@@ -7,6 +7,8 @@
 - L'application fonctionne entièrement côté client, aucun serveur n'est nécessaire
 
 ### 2. Configuration de l'API
+
+#### Option A : Configuration manuelle dans l'interface
 1. **Point de terminaison** (optionnel):
    - Par défaut: `https://models.inference.ai.azure.com/chat/completions`
    - Pour GitHub Models, laissez l'URL par défaut
@@ -18,6 +20,23 @@
    - Copiez votre clé API
    - Collez-la dans le champ "Clé API GitHub Models (OpenAI)"
    - Les paramètres seront sauvegardés automatiquement dans votre navigateur
+
+#### Option B : Configuration via paramètres d'URL
+Vous pouvez pré-remplir les champs en ajoutant des paramètres à l'URL :
+
+```
+index.html?key=VOTRE_CLE_API&endpoint=https://votre.endpoint.com
+```
+
+**Exemples d'utilisation :**
+- Avec clé API uniquement : `index.html?key=ghp_abc123xyz`
+- Avec clé et endpoint : `index.html?key=ghp_abc123&endpoint=https://custom.api.com`
+- Alternative pour la clé : `index.html?apiKey=ghp_abc123`
+
+**Avantages :**
+- ✅ Partage facile de l'application pré-configurée
+- ✅ Déploiement simplifié pour équipes
+- ✅ Les valeurs sont automatiquement sauvegardées dans le navigateur
 
 ### 3. Enregistrer vos travaux
 1. Cliquez sur **"Démarrer l'enregistrement"**
