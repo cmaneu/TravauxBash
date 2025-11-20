@@ -193,6 +193,17 @@
             box-shadow: 0 10px 15px rgba(239, 68, 68, 0.3);
         }
 
+        .btn-download {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(59, 130, 246, 0.3);
+        }
+
         .results {
             margin-top: 1.25rem;
         }
@@ -331,6 +342,13 @@
                 <input type="password" id="apiKey" 
                        placeholder="Entrez votre clé API GitHub Models">
             </div>
+            <div class="form-group">
+                <label for="modelName">Nom du modèle:</label>
+                <input type="text" id="modelName" 
+                       value="openai/gpt-5"
+                       placeholder="openai/gpt-5">
+                <p class="helper-text">Modèle à utiliser pour l'analyse (par défaut: openai/gpt-5)</p>
+            </div>
         </div>
 
         <div class="status" id="status">Prêt à enregistrer</div>
@@ -341,6 +359,7 @@
             <button class="btn-start" id="startBtn">🎤 Démarrer l'enregistrement</button>
             <button class="btn-pause" id="pauseBtn" disabled>⏸️ Pause</button>
             <button class="btn-stop" id="stopBtn" disabled>⏹️ Terminer et analyser</button>
+            <button class="btn-download" id="downloadBtn" disabled>💾 Télécharger l'audio</button>
         </div>
 
         <div class="results" id="results"></div>
@@ -360,11 +379,13 @@
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
         const status = document.getElementById('status');
         const timer = document.getElementById('timer');
         const results = document.getElementById('results');
         const apiKeyInput = document.getElementById('apiKey');
         const apiEndpointInput = document.getElementById('apiEndpoint');
+        const modelNameInput = document.getElementById('modelName');
         const wakeLockStatus = document.getElementById('wakeLockStatus');
 
         // Request wake lock on page load
@@ -480,9 +501,25 @@
             }
         }
 
+        function downloadAudio() {
+            if (lastAudioBlob) {
+                const url = URL.createObjectURL(lastAudioBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                a.download = `enregistrement-${timestamp}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+        }
+
         async function processRecording(audioBlob) {
             const apiKey = apiKeyInput.value.trim();
             const apiEndpoint = apiEndpointInput.value.trim();
+            const modelName = modelNameInput.value.trim() || 'openai/gpt-5';
             
             if (!apiKey) {
                 results.innerHTML = '<div class="error-message">⚠️ Veuillez entrer votre clé API GitHub Models</div>';
@@ -497,6 +534,9 @@
                 status.className = 'status';
                 return;
             }
+
+            // Enable download button once we have audio
+            downloadBtn.disabled = false;
 
             results.innerHTML = `
                 <div class="loading">
@@ -558,7 +598,7 @@ Ne réponds qu'avec le JSON, rien d'autre.`
                                 ]
                             }
                         ],
-                        model: 'openai/gpt-5',
+                        model: modelName,
                         temperature: 0.7,
                         max_tokens: 2000
                     })
@@ -661,6 +701,7 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         startBtn.addEventListener('click', startRecording);
         pauseBtn.addEventListener('click', pauseRecording);
         stopBtn.addEventListener('click', stopRecording);
+        downloadBtn.addEventListener('click', downloadAudio);
 
         // Function to get query parameters
         function getQueryParam(param) {
@@ -668,9 +709,10 @@ Ne réponds qu'avec le JSON, rien d'autre.`
             return urlParams.get(param);
         }
 
-        // Load API key and endpoint from query parameters or localStorage
+        // Load API key, endpoint, and model name from query parameters or localStorage
         const queryApiKey = getQueryParam('key') || getQueryParam('apiKey');
         const queryApiEndpoint = getQueryParam('endpoint');
+        const queryModelName = getQueryParam('model');
 
         // Priority: query parameters > localStorage
         if (queryApiKey) {
@@ -695,6 +737,17 @@ Ne réponds qu'avec le JSON, rien d'autre.`
             }
         }
 
+        if (queryModelName) {
+            modelNameInput.value = queryModelName;
+            // Optionally save to localStorage
+            localStorage.setItem('githubModelsModelName', queryModelName);
+        } else {
+            const savedModelName = localStorage.getItem('githubModelsModelName');
+            if (savedModelName) {
+                modelNameInput.value = savedModelName;
+            }
+        }
+
         // Save API key to localStorage when changed
         apiKeyInput.addEventListener('change', () => {
             localStorage.setItem('githubModelsApiKey', apiKeyInput.value);
@@ -703,6 +756,11 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         // Save API endpoint to localStorage when changed
         apiEndpointInput.addEventListener('change', () => {
             localStorage.setItem('githubModelsApiEndpoint', apiEndpointInput.value);
+        });
+
+        // Save model name to localStorage when changed
+        modelNameInput.addEventListener('change', () => {
+            localStorage.setItem('githubModelsModelName', modelNameInput.value);
         });
 
         // Function to retry analysis with the last recorded audio
