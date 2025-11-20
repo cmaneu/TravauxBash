@@ -193,6 +193,17 @@
             box-shadow: 0 10px 15px rgba(239, 68, 68, 0.3);
         }
 
+        .btn-download {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(59, 130, 246, 0.3);
+        }
+
         .results {
             margin-top: 1.25rem;
         }
@@ -331,6 +342,13 @@
                 <input type="password" id="apiKey" 
                        placeholder="Entrez votre clé API GitHub Models">
             </div>
+            <div class="form-group">
+                <label for="modelName">Nom du modèle:</label>
+                <input type="text" id="modelName" 
+                       value="openai/gpt-5"
+                       placeholder="openai/gpt-5">
+                <p class="helper-text">Modèle à utiliser pour l'analyse (par défaut: openai/gpt-5)</p>
+            </div>
         </div>
 
         <div class="status" id="status">Prêt à enregistrer</div>
@@ -341,6 +359,7 @@
             <button class="btn-start" id="startBtn">🎤 Démarrer l'enregistrement</button>
             <button class="btn-pause" id="pauseBtn" disabled>⏸️ Pause</button>
             <button class="btn-stop" id="stopBtn" disabled>⏹️ Terminer et analyser</button>
+            <button class="btn-download" id="downloadBtn" disabled>💾 Télécharger l'audio</button>
         </div>
 
         <div class="results" id="results"></div>
@@ -355,15 +374,18 @@
         let timerInterval = null;
         let wakeLock = null;
         let isPaused = false;
+        let lastAudioBlob = null;
 
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
         const status = document.getElementById('status');
         const timer = document.getElementById('timer');
         const results = document.getElementById('results');
         const apiKeyInput = document.getElementById('apiKey');
         const apiEndpointInput = document.getElementById('apiEndpoint');
+        const modelNameInput = document.getElementById('modelName');
         const wakeLockStatus = document.getElementById('wakeLockStatus');
 
         // Request wake lock on page load
@@ -407,7 +429,15 @@
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                
+                // Only use audio/wav - no webm support
+                if (!MediaRecorder.isTypeSupported('audio/wav')) {
+                    throw new Error('Votre navigateur ne supporte pas l\'enregistrement audio WAV. Veuillez utiliser un navigateur compatible.');
+                }
+                
+                const mimeType = 'audio/wav';
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
                 audioChunks = [];
                 isPaused = false;
 
@@ -416,7 +446,8 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    lastAudioBlob = audioBlob; // Store for potential retry
                     await processRecording(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
                 };
@@ -478,9 +509,32 @@
             }
         }
 
+        function downloadAudio() {
+            if (lastAudioBlob) {
+                const url = URL.createObjectURL(lastAudioBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                
+                // Determine file extension based on blob type (WAV or MP3 only)
+                let extension = 'wav';
+                if (lastAudioBlob.type.includes('mp3')) {
+                    extension = 'mp3';
+                }
+                
+                a.download = `enregistrement-${timestamp}.${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+        }
+
         async function processRecording(audioBlob) {
             const apiKey = apiKeyInput.value.trim();
             const apiEndpoint = apiEndpointInput.value.trim();
+            const modelName = modelNameInput.value.trim() || 'openai/gpt-5';
             
             if (!apiKey) {
                 results.innerHTML = '<div class="error-message">⚠️ Veuillez entrer votre clé API GitHub Models</div>';
@@ -496,6 +550,9 @@
                 return;
             }
 
+            // Enable download button once we have audio
+            downloadBtn.disabled = false;
+
             results.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
@@ -506,6 +563,12 @@
             try {
                 // Convert audio blob to base64
                 const audioBase64 = await blobToBase64(audioBlob);
+                
+                // Determine audio format (WAV or MP3 only)
+                let audioFormat = 'wav';
+                if (audioBlob.type.includes('mp3')) {
+                    audioFormat = 'mp3';
+                }
 
                 const response = await fetch(apiEndpoint, {
                     method: 'POST',
@@ -514,10 +577,15 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
+                        model: modelName,
+                        modalities: ["text"],
                         messages: [
                             {
-                                role: 'system',
-                                content: `Tu es un assistant qui aide à organiser les travaux de chantier. 
+                                role: "user",
+                                content: [
+                                    {
+                                        type: "text",
+                                        text: `Tu es un assistant qui aide à organiser les travaux de chantier. 
 Tu dois analyser l'enregistrement vocal et extraire les informations sur les travaux à effectuer.
 Pour chaque travail mentionné, identifie:
 - Pièce: la pièce ou zone concernée
@@ -537,28 +605,18 @@ Réponds UNIQUEMENT avec un tableau JSON dans ce format exact:
   ]
 }
 
-Ne réponds qu'avec le JSON, rien d'autre.`
-                            },
-                            {
-                                role: 'user',
-                                content: [
-                                    {
-                                        type: 'text',
-                                        text: 'Voici l\'enregistrement des travaux à effectuer. Analyse-le et extrait les informations dans le format demandé.'
+Ne réponds qu'avec le JSON, rien d'autre. Voici l'enregistrement des travaux à effectuer.`
                                     },
                                     {
-                                        type: 'input_audio',
+                                        type: "input_audio",
                                         input_audio: {
                                             data: audioBase64.split(',')[1],
-                                            format: 'wav'
+                                            format: audioFormat
                                         }
                                     }
                                 ]
                             }
-                        ],
-                        model: 'gpt-4o-audio-preview',
-                        temperature: 0.7,
-                        max_tokens: 2000
+                        ]
                     })
                 });
 
@@ -598,7 +656,15 @@ Ne réponds qu'avec le JSON, rien d'autre.`
                 timer.textContent = '00:00';
 
             } catch (err) {
-                results.innerHTML = `<div class="error-message">❌ Erreur: ${err.message}</div>`;
+                results.innerHTML = `
+                    <div class="error-message">
+                        ❌ Erreur: ${err.message}
+                        <br><br>
+                        <button class="btn-start" onclick="retryAnalysis()" style="margin-top: 10px;">
+                            🔄 Relancer l'analyse
+                        </button>
+                    </div>
+                `;
                 status.textContent = 'Erreur lors de l\'analyse';
                 status.className = 'status error';
                 console.error('Error:', err);
@@ -651,6 +717,7 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         startBtn.addEventListener('click', startRecording);
         pauseBtn.addEventListener('click', pauseRecording);
         stopBtn.addEventListener('click', stopRecording);
+        downloadBtn.addEventListener('click', downloadAudio);
 
         // Function to get query parameters
         function getQueryParam(param) {
@@ -658,9 +725,10 @@ Ne réponds qu'avec le JSON, rien d'autre.`
             return urlParams.get(param);
         }
 
-        // Load API key and endpoint from query parameters or localStorage
+        // Load API key, endpoint, and model name from query parameters or localStorage
         const queryApiKey = getQueryParam('key') || getQueryParam('apiKey');
         const queryApiEndpoint = getQueryParam('endpoint');
+        const queryModelName = getQueryParam('model');
 
         // Priority: query parameters > localStorage
         if (queryApiKey) {
@@ -685,6 +753,17 @@ Ne réponds qu'avec le JSON, rien d'autre.`
             }
         }
 
+        if (queryModelName) {
+            modelNameInput.value = queryModelName;
+            // Optionally save to localStorage
+            localStorage.setItem('githubModelsModelName', queryModelName);
+        } else {
+            const savedModelName = localStorage.getItem('githubModelsModelName');
+            if (savedModelName) {
+                modelNameInput.value = savedModelName;
+            }
+        }
+
         // Save API key to localStorage when changed
         apiKeyInput.addEventListener('change', () => {
             localStorage.setItem('githubModelsApiKey', apiKeyInput.value);
@@ -694,6 +773,22 @@ Ne réponds qu'avec le JSON, rien d'autre.`
         apiEndpointInput.addEventListener('change', () => {
             localStorage.setItem('githubModelsApiEndpoint', apiEndpointInput.value);
         });
+
+        // Save model name to localStorage when changed
+        modelNameInput.addEventListener('change', () => {
+            localStorage.setItem('githubModelsModelName', modelNameInput.value);
+        });
+
+        // Function to retry analysis with the last recorded audio
+        async function retryAnalysis() {
+            if (lastAudioBlob) {
+                status.textContent = '⏳ Nouvelle tentative d\'analyse...';
+                status.className = 'status';
+                await processRecording(lastAudioBlob);
+            } else {
+                results.innerHTML = '<div class="error-message">⚠️ Aucun enregistrement disponible pour relancer l\'analyse</div>';
+            }
+        }
     </script>
 </body>
 </html>

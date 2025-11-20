@@ -6,7 +6,10 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 
 - **🔒 Verrouillage d'écran** : Empêche l'appareil de se mettre en veille pendant l'utilisation
 - **🎤 Enregistrement vocal** : Système complet avec démarrage, pause, reprise et arrêt
+- **💾 Téléchargement audio** : Sauvegardez vos enregistrements localement
 - **🤖 Analyse IA** : Utilise OpenAI via GitHub Models pour analyser les enregistrements
+- **⚙️ Modèle configurable** : Personnalisez le modèle IA utilisé pour l'analyse
+- **🔄 Réessai automatique** : Relancez l'analyse en cas d'erreur API sans réenregistrer
 - **📊 Organisation automatique** : Génère un tableau structuré avec :
   - Pièce
   - Emplacement
@@ -20,25 +23,28 @@ Application web pour les directeurs de chantier permettant d'organiser les trava
 1. Ouvrez `index.html` dans un navigateur web moderne
 2. Configurez le point de terminaison API (par défaut : GitHub Models)
 3. Entrez votre clé API GitHub Models (OpenAI)
-4. Cliquez sur "Démarrer l'enregistrement" pour commencer
-5. Décrivez les travaux à effectuer vocalement
-6. Utilisez "Pause" pour interrompre temporairement
-7. Cliquez sur "Terminer et analyser" pour obtenir le tableau organisé
+4. (Optionnel) Personnalisez le nom du modèle (par défaut : openai/gpt-5)
+5. Cliquez sur "Démarrer l'enregistrement" pour commencer
+6. Décrivez les travaux à effectuer vocalement
+7. Utilisez "Pause" pour interrompre temporairement
+8. Cliquez sur "Terminer et analyser" pour obtenir le tableau organisé
+9. Utilisez "Télécharger l'audio" pour sauvegarder votre enregistrement
 
 ### Méthode 2 : Configuration via URL (paramètres de requête)
-Vous pouvez pré-configurer l'application en passant la clé API et l'endpoint via l'URL :
+Vous pouvez pré-configurer l'application en passant la clé API, l'endpoint et le modèle via l'URL :
 
 ```
-index.html?key=VOTRE_CLE_API&endpoint=https://votre.endpoint.com
+index.html?key=VOTRE_CLE_API&endpoint=https://votre.endpoint.com&model=openai/gpt-5
 ```
 
 **Paramètres disponibles :**
 - `key` ou `apiKey` : Votre clé API
 - `endpoint` : L'URL du point de terminaison API
+- `model` : Le nom du modèle à utiliser
 
 **Exemple :**
 ```
-index.html?key=ghp_abc123&endpoint=https://models.inference.ai.azure.com/chat/completions
+index.html?key=ghp_abc123&endpoint=https://models.inference.ai.azure.com/chat/completions&model=openai/gpt-5
 ```
 
 Les valeurs passées par URL sont automatiquement sauvegardées dans le navigateur.
@@ -57,11 +63,19 @@ L'application permet de configurer le point de terminaison OpenAI :
 Vous aurez besoin d'une clé API GitHub Models pour utiliser la fonctionnalité d'analyse IA :
 
 1. Visitez [GitHub Models](https://github.com/marketplace/models)
-2. Obtenez une clé API pour le modèle `gpt-4o-audio-preview`
+2. Obtenez une clé API pour le modèle `openai/gpt-5`
 3. **Option A** : Entrez la clé dans le champ prévu dans l'application
 4. **Option B** : Passez la clé via le paramètre `key` dans l'URL
 
-Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre navigateur pour une utilisation ultérieure.
+Les paramètres (endpoint, clé API et nom du modèle) sont sauvegardés localement dans votre navigateur pour une utilisation ultérieure.
+
+### Nom du modèle
+
+L'application permet de personnaliser le modèle IA utilisé :
+- **Par défaut** : `openai/gpt-5` (modèle multimodal)
+- **Personnalisable** : Vous pouvez utiliser n'importe quel modèle compatible
+- **Via URL** : Passez le paramètre `model` dans l'URL
+- **Sauvegarde** : Le nom du modèle est sauvegardé localement dans votre navigateur
 
 ## 📱 Compatibilité
 
@@ -79,7 +93,7 @@ Les paramètres (endpoint et clé API) sont sauvegardés localement dans votre n
 - JavaScript (vanilla)
 - MediaRecorder API
 - Wake Lock API
-- OpenAI GPT-4o Audio Preview via endpoint configurable (GitHub Models par défaut)
+- OpenAI GPT-5 via endpoint configurable (GitHub Models par défaut)
 
 ## 📝 Exemple d'utilisation
 
