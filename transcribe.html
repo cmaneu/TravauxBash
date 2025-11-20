@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravauxBash - Transcription Multiple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1.25rem;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            min-height: calc(100vh - 2.5rem);
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .status {
+            padding: 0.75rem 1rem;
+            background: #f3f4f6;
+            border-radius: 0.75rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.recording {
+            background: #fee;
+            color: #b91c1c;
+            animation: pulse 2s infinite;
+        }
+
+        .status.transcribing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .record-button-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .record-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 3rem;
+            background: #10b981;
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .record-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+        }
+
+        .record-button:active {
+            transform: scale(0.95);
+        }
+
+        .record-button.recording {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .transcriptions-section {
+            margin-top: 2rem;
+        }
+
+        .transcriptions-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .transcription-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transcription-item {
+            background: #f8f9fa;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .transcription-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .transcription-text {
+            font-size: 1rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .transcription-meta {
+            font-size: 0.75rem;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transcription-date {
+            font-style: italic;
+        }
+
+        .delete-button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.3s;
+        }
+
+        .delete-button:hover {
+            background: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.875rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            .record-button {
+                width: 120px;
+                height: 120px;
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 TravauxBash</h1>
+        <p class="subtitle">Transcription vocale multiple</p>
+
+        <div class="config-section">
+            <div class="form-group">
+                <label for="apiEndpoint">Point de terminaison API Azure OpenAI:</label>
+                <input type="text" id="apiEndpoint" 
+                       placeholder="https://aoaipysparkedit.openai.azure.com">
+                <p class="helper-text">URL de base de votre endpoint Azure OpenAI</p>
+            </div>
+            <div class="form-group">
+                <label for="apiKey">Clé API Azure OpenAI:</label>
+                <input type="password" id="apiKey" 
+                       placeholder="Entrez votre clé API">
+            </div>
+            <div class="form-group">
+                <label for="temperature">Température (0-1):</label>
+                <input type="number" id="temperature" 
+                       value="0.82" 
+                       min="0" 
+                       max="1" 
+                       step="0.01">
+                <p class="helper-text">Contrôle la créativité de la transcription</p>
+            </div>
+        </div>
+
+        <div class="status" id="status">Maintenez le bouton pour enregistrer</div>
+
+        <div class="record-button-container">
+            <button class="record-button" id="recordButton">🎤</button>
+        </div>
+
+        <div class="transcriptions-section">
+            <h2>📝 Transcriptions</h2>
+            <div class="transcription-list" id="transcriptionList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>Aucune transcription pour le moment</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Maintenez le bouton pour enregistrer</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let stream = null;
+        let db = null;
+
+        const recordButton = document.getElementById('recordButton');
+        const status = document.getElementById('status');
+        const transcriptionList = document.getElementById('transcriptionList');
+        const apiKeyInput = document.getElementById('apiKey');
+        const apiEndpointInput = document.getElementById('apiEndpoint');
+        const temperatureInput = document.getElementById('temperature');
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('TravauxBashDB', 1);
+                
+                request.onerror = () => {
+                    reject('Erreur lors de l\'ouverture de la base de données');
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('transcriptions')) {
+                        const objectStore = db.createObjectStore('transcriptions', { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // Save transcription to IndexedDB
+        function saveTranscription(text) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['transcriptions'], 'readwrite');
+                const objectStore = transaction.objectStore('transcriptions');
+                const transcription = {
+                    text: text,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const request = objectStore.add(transcription);
+                
+                request.onsuccess = () => {
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    reject('Erreur lors de la sauvegarde de la transcription');
+                };
+            });
+        }
+
+        // Load all transcriptions from IndexedDB
+        function loadTranscriptions() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['transcriptions'], 'readonly');
+                const objectStore = transaction.objectStore('transcriptions');
+                const request = objectStore.getAll();
+                
+                request.onsuccess = () => {
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    reject('Erreur lors du chargement des transcriptions');
+                };
+            });
+        }
+
+        // Delete transcription from IndexedDB
+        function deleteTranscription(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['transcriptions'], 'readwrite');
+                const objectStore = transaction.objectStore('transcriptions');
+                const request = objectStore.delete(id);
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = () => {
+                    reject('Erreur lors de la suppression de la transcription');
+                };
+            });
+        }
+
+        // Display transcriptions
+        async function displayTranscriptions() {
+            try {
+                const transcriptions = await loadTranscriptions();
+                
+                if (transcriptions.length === 0) {
+                    transcriptionList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>Aucune transcription pour le moment</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Maintenez le bouton pour enregistrer</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sort by timestamp descending (newest first)
+                transcriptions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                let html = '';
+                transcriptions.forEach(t => {
+                    const date = new Date(t.timestamp);
+                    const formattedDate = date.toLocaleString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    html += `
+                        <div class="transcription-item">
+                            <div class="transcription-text">${escapeHtml(t.text)}</div>
+                            <div class="transcription-meta">
+                                <span class="transcription-date">${formattedDate}</span>
+                                <button class="delete-button" onclick="handleDelete(${t.id})">🗑️ Supprimer</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                transcriptionList.innerHTML = html;
+            } catch (err) {
+                console.error('Error loading transcriptions:', err);
+                transcriptionList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>Erreur lors du chargement des transcriptions</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle delete button click
+        async function handleDelete(id) {
+            try {
+                await deleteTranscription(id);
+                await displayTranscriptions();
+            } catch (err) {
+                console.error('Error deleting transcription:', err);
+                status.textContent = '❌ Erreur lors de la suppression';
+                status.className = 'status error';
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Start recording
+        async function startRecording() {
+            try {
+                audioChunks = [];
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await transcribeAudio(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                
+                status.textContent = '🎙️ Enregistrement en cours...';
+                status.className = 'status recording';
+                recordButton.classList.add('recording');
+            } catch (err) {
+                console.error('Error starting recording:', err);
+                status.textContent = '❌ Erreur d\'accès au microphone: ' + err.message;
+                status.className = 'status error';
+            }
+        }
+
+        // Stop recording
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                status.textContent = '⏳ Transcription en cours...';
+                status.className = 'status transcribing';
+                recordButton.classList.remove('recording');
+            }
+        }
+
+        // Transcribe audio using Azure OpenAI
+        async function transcribeAudio(audioBlob) {
+            const apiKey = apiKeyInput.value.trim();
+            const apiEndpoint = apiEndpointInput.value.trim();
+            const temperature = parseFloat(temperatureInput.value);
+            
+            if (!apiKey) {
+                status.textContent = '⚠️ Veuillez entrer votre clé API';
+                status.className = 'status error';
+                return;
+            }
+            
+            if (!apiEndpoint) {
+                status.textContent = '⚠️ Veuillez entrer le point de terminaison API';
+                status.className = 'status error';
+                return;
+            }
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'recording.wav');
+                formData.append('language', 'fr');
+                formData.append('temperature', temperature.toString());
+                formData.append('response_format', 'json');
+                formData.append('model', 'gpt-4o-transcribe');
+                
+                // Build the full URL
+                const url = `${apiEndpoint}/openai/deployments/gpt-4o-transcribe/audio/transcriptions?api-version=2025-01-01-preview`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'api-key': apiKey
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erreur API: ${response.status} - ${errorText}`);
+                }
+                
+                // Handle streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let finalText = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.substring(6));
+                                if (data.type === 'transcript.text.done' && data.text) {
+                                    finalText = data.text;
+                                }
+                            } catch (e) {
+                                // Ignore parsing errors for incomplete chunks
+                            }
+                        }
+                    }
+                }
+                
+                if (finalText) {
+                    // Save to IndexedDB
+                    await saveTranscription(finalText);
+                    
+                    // Refresh display
+                    await displayTranscriptions();
+                    
+                    status.textContent = '✅ Transcription ajoutée';
+                    status.className = 'status success';
+                    
+                    // Reset status after 2 seconds
+                    setTimeout(() => {
+                        status.textContent = 'Maintenez le bouton pour enregistrer';
+                        status.className = 'status';
+                    }, 2000);
+                } else {
+                    throw new Error('Aucune transcription reçue');
+                }
+                
+            } catch (err) {
+                console.error('Error transcribing:', err);
+                status.textContent = '❌ Erreur de transcription: ' + err.message;
+                status.className = 'status error';
+            }
+        }
+
+        // Mouse/Touch events for walkie-talkie style button
+        recordButton.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            startRecording();
+        });
+
+        recordButton.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            stopRecording();
+        });
+
+        recordButton.addEventListener('mouseleave', (e) => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        recordButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startRecording();
+        });
+
+        recordButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopRecording();
+        });
+
+        recordButton.addEventListener('touchcancel', (e) => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        // Load API key and endpoint from localStorage
+        const savedApiKey = localStorage.getItem('azureOpenAIApiKey');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+        }
+
+        const savedApiEndpoint = localStorage.getItem('azureOpenAIEndpoint');
+        if (savedApiEndpoint) {
+            apiEndpointInput.value = savedApiEndpoint;
+        }
+
+        const savedTemperature = localStorage.getItem('azureOpenAITemperature');
+        if (savedTemperature) {
+            temperatureInput.value = savedTemperature;
+        }
+
+        // Save API key to localStorage when changed
+        apiKeyInput.addEventListener('change', () => {
+            localStorage.setItem('azureOpenAIApiKey', apiKeyInput.value);
+        });
+
+        // Save API endpoint to localStorage when changed
+        apiEndpointInput.addEventListener('change', () => {
+            localStorage.setItem('azureOpenAIEndpoint', apiEndpointInput.value);
+        });
+
+        // Save temperature to localStorage when changed
+        temperatureInput.addEventListener('change', () => {
+            localStorage.setItem('azureOpenAITemperature', temperatureInput.value);
+        });
+
+        // Initialize the app
+        (async function init() {
+            try {
+                await initDB();
+                await displayTranscriptions();
+            } catch (err) {
+                console.error('Initialization error:', err);
+                status.textContent = '❌ Erreur d\'initialisation: ' + err.message;
+                status.className = 'status error';
+            }
+        })();
+
+        // Make handleDelete available globally
+        window.handleDelete = handleDelete;
+    </script>
+</body>
+</html>
