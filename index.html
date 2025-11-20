@@ -430,14 +430,14 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
-                // Use audio/wav if supported, otherwise fall back to webm
-                const mimeType = MediaRecorder.isTypeSupported('audio/wav') 
-                    ? 'audio/wav' 
-                    : MediaRecorder.isTypeSupported('audio/webm') 
-                    ? 'audio/webm' 
-                    : '';
+                // Only use audio/wav - no webm support
+                if (!MediaRecorder.isTypeSupported('audio/wav')) {
+                    throw new Error('Votre navigateur ne supporte pas l\'enregistrement audio WAV. Veuillez utiliser un navigateur compatible.');
+                }
                 
-                mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+                const mimeType = 'audio/wav';
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
                 audioChunks = [];
                 isPaused = false;
 
@@ -446,7 +446,7 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
                     lastAudioBlob = audioBlob; // Store for potential retry
                     await processRecording(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
@@ -517,11 +517,9 @@
                 a.href = url;
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                 
-                // Determine file extension based on blob type
-                let extension = 'webm';
-                if (lastAudioBlob.type.includes('wav')) {
-                    extension = 'wav';
-                } else if (lastAudioBlob.type.includes('mp3')) {
+                // Determine file extension based on blob type (WAV or MP3 only)
+                let extension = 'wav';
+                if (lastAudioBlob.type.includes('mp3')) {
                     extension = 'mp3';
                 }
                 
@@ -566,11 +564,9 @@
                 // Convert audio blob to base64
                 const audioBase64 = await blobToBase64(audioBlob);
                 
-                // Determine audio format
+                // Determine audio format (WAV or MP3 only)
                 let audioFormat = 'wav';
-                if (audioBlob.type.includes('webm')) {
-                    audioFormat = 'wav'; // Convert webm to wav format indicator
-                } else if (audioBlob.type.includes('mp3')) {
+                if (audioBlob.type.includes('mp3')) {
                     audioFormat = 'mp3';
                 }
 
